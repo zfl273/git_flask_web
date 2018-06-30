@@ -5,7 +5,8 @@ from flask_migrate import MigrateCommand, Migrate
 
 
 from info import create_app, db
-
+# 导入模型类
+from info import models
 app = create_app('development')
 manage = Manager(app)
 # 使用迁移框架，绑定程序，数据库和命令

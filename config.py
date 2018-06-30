@@ -8,8 +8,9 @@ class Config(object):
     SESSION_TYPE = 'redis'
     SESSION_USE_SIGNER = True
     # 构造redis的实例
-
-    SESSION_REDIS = StrictRedis(host='localhost', port=6379)
+    REDIS_HOST = 'localhost'
+    REDIS_PORT = 6379
+    SESSION_REDIS = StrictRedis(host=REDIS_HOST, port=REDIS_PORT)
     PERMANENT_SESSION_LIFETIME = 86400
     # 设置秘钥
     SECRET_KEY = '7FVFfsetIITPF/2TJg66No3ySxosUs2+frMZV4VB3/UZK5cICmc5EQ=='
@@ -24,6 +25,6 @@ class productionConfig(Config):
     DEBUG = False
 
 config = {
-    'development':developmentConfig,
-    'production':productionConfig
+    'development': developmentConfig,
+    'production': productionConfig
 }

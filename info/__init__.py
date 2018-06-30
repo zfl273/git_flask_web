@@ -8,6 +8,7 @@ from flask import Flask
 from flask_session import Session
 from config import config, Config
 from redis import StrictRedis
+from flask_wtf import csrf,CSRFProtect
 
 
 db = SQLAlchemy()
@@ -32,6 +33,13 @@ def create_app(config_name):
     app.config.from_object(config[config_name])
     Session(app)
     db.init_app(app)
+    CSRFProtect(app)
+    @app.after_request
+    def after_request(response):
+        csrf_token = csrf.generate_csrf()
+        response.set_cookie('csrf_token', csrf_token)
+        return response
+
     from info.modules.news import news_blue
     app.register_blueprint(news_blue)
     from info.modules.passport import passport_blue

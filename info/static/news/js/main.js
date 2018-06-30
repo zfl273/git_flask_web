@@ -177,7 +177,7 @@ function sendSMSCode() {
         return;
     }
 
-    // TODO 发送短信验证码
+    // have done 发送短信验证码
     var params = {
         'mobile':mobile,
         'image_code':imageCode,
@@ -188,6 +188,9 @@ function sendSMSCode() {
         type:'post',
         data:JSON.stringify(params),
         contentType:'application/json',
+        headers:{
+            'X-CSRFToken': getCookie('csrf_token')
+        },
         success:function(resp){
             if(resp.errno == '0'){
                 var num = 60;

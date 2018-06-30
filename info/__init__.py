@@ -6,11 +6,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
 # 将session存入redis
 from flask_session import Session
-from config import config
+from config import config, Config
+from redis import StrictRedis
 
 
 db = SQLAlchemy()
-
+# 数据库redis用来存放图片验证码，手机短信验证码
+redis_store = StrictRedis(host=Config.REDIS_HOST, port=Config.REDIS_HOST, decode_responses=True)
 # 设置日志的记录等级
 logging.basicConfig(level=logging.DEBUG)# 调试debug级
 # 创建日志记录器，指明日志保存的路径、每个日志文件的最大大小、保存的日志文件个数上限
@@ -32,4 +34,6 @@ def create_app(config_name):
     db.init_app(app)
     from info.modules.news import news_blue
     app.register_blueprint(news_blue)
+    from info.modules.passport import passport_blue
+    app.register_blueprint(passport_blue)
     return app

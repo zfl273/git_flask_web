@@ -7,7 +7,7 @@ class Config(object):
     #配置session信息
     SESSION_TYPE = 'redis'
     SESSION_USE_SIGNER = True
-    # 构造redis的实例
+    # 构造redis的实例 存放session
     REDIS_HOST = 'localhost'
     REDIS_PORT = 6379
     SESSION_REDIS = StrictRedis(host=REDIS_HOST, port=REDIS_PORT)

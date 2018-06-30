@@ -16,4 +16,4 @@ def index():
 # favicon
 @news_blue.route('/favicon.ico')
 def favicon():
-    return current_app.send_static_file('new/favicon.ico')
+    return current_app.send_static_file('news/favicon.ico')

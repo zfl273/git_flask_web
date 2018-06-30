@@ -4,9 +4,11 @@ from config import config
 # 集成数据库扩展
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import MigrateCommand,Migrate
+# 将session存入redis
+from flask_session import Session
 app = Flask(__name__)
 app.config.from_object(config['development'])
-
+Session(app)
 db = SQLAlchemy(app)
 
 
@@ -18,6 +20,7 @@ manage.add_command('db', MigrateCommand)
 
 @app.route('/')
 def index():
+    session['name']='feifei'
     return 'index'
 if __name__ == '__main__':
     manage.run()

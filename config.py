@@ -8,7 +8,8 @@ class Config(object):
     SESSION_TYPE = 'redis'
     SESSION_USE_SIGNER = True
     # 构造redis的实例 存放session
-    REDIS_HOST = 'localhost'
+    # REDIS_HOST = 'localhost' 这样会报错？
+    REDIS_HOST = '127.0.0.1'
     REDIS_PORT = 6379
     SESSION_REDIS = StrictRedis(host=REDIS_HOST, port=REDIS_PORT)
     PERMANENT_SESSION_LIFETIME = 86400

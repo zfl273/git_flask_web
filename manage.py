@@ -12,11 +12,14 @@ manage = Manager(app)
 Migrate(app, db)
 manage.add_command('db', MigrateCommand)
 num = 0
+
+
 @app.route('/')
 def index():
     session['name']='feifei'
     global num
     num += 1
     return 'index%d'%num
+
 if __name__ == '__main__':
     manage.run()

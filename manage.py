@@ -1,1 +1,2 @@
-print('test1')
+from flask import session
+from flask_script import Manager

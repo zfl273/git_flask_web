@@ -178,3 +178,11 @@ def login():
 
     return jsonify(errno=RET.OK, errmsg='登录成功')
 
+
+# 用户退出，清楚缓存信息
+@passport_blue.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    session.pop('mobile', None)
+    session.pop('nick_name', None)
+    return jsonify(errno=RET.OK, errmsg="OK")

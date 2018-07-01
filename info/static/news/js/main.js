@@ -143,7 +143,29 @@ $(function(){
             return;
         }
 
-        // 发起注册请求
+        // TODO 发起注册请求
+        var params = {
+            'mobile':mobile,
+            'sms_code':smscode,
+            'password':password
+        }
+        $.ajax({
+            url:'/register',
+            type:'post',
+            data:JSON.stringify(params),
+            contentType:'application/json',
+            headers:{
+                'X-CSRFToken':getCookie('csrf_token')
+
+            },
+            success:function(resp){
+                if(resp.errno == '0'){
+                    location.reload()
+                }else{
+                    $('#register-password-err').html(resp.errmsg).show()
+                }
+            }
+        })
 
     })
 })

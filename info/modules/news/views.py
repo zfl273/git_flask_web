@@ -8,7 +8,6 @@ from flask import session, render_template, current_app
 
 @news_blue.route('/')
 def index():
-    session['name']='feifei'
 
 
     return render_template('news/index.html')

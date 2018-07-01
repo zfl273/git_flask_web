@@ -7,6 +7,7 @@ from info import constants, db
 import re, random
 from info.libs.yuntongxun import sms
 from info.models import User
+from datetime import datetime
 
 #通过图片的url请求这个地址,给前端发送验证码图片
 @passport_blue.route('/image_code')
@@ -143,6 +144,37 @@ def register1():
     return jsonify(errno=RET.OK, errmsg='注册成功')
 
 
+# 用户登录业务逻辑
+@passport_blue.route('/login', methods=['POST'])
+def login():
+    mobile = request.json.get('mobile')
+    password = request.json.get('password')
+    if not all([mobile, password]):
+        return jsonify(errno=RET.PARAMERR, errmsg='前端发送数据不全')
 
+    if not re.match(r'^1[3456789][0-9]{9}$', mobile):
+        return jsonify(errno=RET.DATAERR, errmsg='手机号码不正确')
+    try:
+        user = User.query.filter_by(mobile=mobile).first()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
 
+    if (not user) or (not user.check_password(password)):
+        return jsonify(errno=RET.DATAERR, errmsg='用户名或密码不正确')
+
+    user.last_login = datetime.now()
+
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg='登录时间写入失败')
+    session['user_id'] = user.id
+    session['mobile'] = user.mobile
+    session['nick_name'] = user.nick_name
+
+    return jsonify(errno=RET.OK, errmsg='登录成功')
 

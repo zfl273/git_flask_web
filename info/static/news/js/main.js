@@ -110,6 +110,26 @@ $(function(){
         }
 
         // 发起登录请求
+        var params = {
+            'mobile':mobile,
+            'password':password
+        }
+        $.ajax({
+            url:'/passport/login',
+            type:'post',
+            data:JSON.stringify(params),
+            contentType:'application/json',
+            headers:{
+                'X-CSRFToken':getCookie('csrf_token')
+            },
+            success:function(resp){
+                if(resp.errno=='0'){
+                    location.reload();
+                }else{
+                    $('#login-password-err').html(resp.errmsg).show()
+                }
+            }
+        })
     })
 
 
@@ -150,7 +170,7 @@ $(function(){
             'password':password
         }
         $.ajax({
-            url:'/register',
+            url:'/passport/register',
             type:'post',
             data:JSON.stringify(params),
             contentType:'application/json',
@@ -175,7 +195,7 @@ var imageCodeId = ""// uuid
 // have done 生成一个图片验证码的编号，并设置页面中图片验证码img标签的src属性
 function generateImageCode() {
     imageCodeId = generateUUID();
-    var url = '/image_code?image_code_id='+imageCodeId;
+    var url = '/passport/image_code?image_code_id='+imageCodeId;
     $('.get_pic_code').attr('src',url)
 
 }
@@ -206,7 +226,7 @@ function sendSMSCode() {
         'image_code_id':imageCodeId
     }
     $.ajax({
-        url:'/sms_code',
+        url:'/passport/sms_code',
         type:'post',
         data:JSON.stringify(params),
         contentType:'application/json',

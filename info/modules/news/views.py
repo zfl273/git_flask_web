@@ -14,7 +14,6 @@ from info.utils.commons import login_required
 @news_blue.route('/')
 @login_required
 def index():
-    user = g.user
     # user_id = session.get('user_id')# session为redis数据库
     # data = None
     # user = None
@@ -24,8 +23,10 @@ def index():
     #     except Exception as e:
     #         current_app.logger.error(e)
     #         return jsonify(errno=RET.DBERR, errmsg='查询数据库失败')
+
     # ****新闻点击排行
     # 默认按照新闻的点击次数倒序排列
+    user = g.user
     try:
         news_list = News.query.filter().order_by(News.clicks.desc()).limit(6)
     except Exception as e:
@@ -113,9 +114,22 @@ def get_news_detail(news_id):
         current_app.logger.error(e)
         db.session.rollback()
         return jsonify(errno=RET.DBERR, errmsg='数据库存取失败')
+    #  *****点击排行。。。复用
+    try:
+        news_list = News.query.filter().order_by(News.clicks.desc()).limit(6)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库排序错误')
+    if not news_list:
+        return jsonify(errno=RET.NODATA, errmsg='暂无数据')
+    print('news_list为：', news_list)
+    news_dict_list = []
+    for new in news_list:
+        news_dict_list.append(new.to_dict())# 转成字典
     data = {
-        'user': user.to_dict() if user else None,
-        'news_detail': news.to_dict()
+        'user_info': user.to_dict() if user else None,
+        'news_detail': news.to_dict(),
+        'news_dict_list': news_dict_list
     }
 
     return render_template('news/detail.html', data=data)
@@ -128,7 +142,7 @@ def news_collect():
     if not user:
         return jsonify(errno=RET.SESSIONERR, errmsg='用户没有登录')
 
-    news_id = request.json.get('user_id')
+    news_id = request.json.get('news_id')
     action = request.json.get('action')
     if not all([news_id, action]):
         return jsonify(errno=RET.PARAMERR, errmsg='参数不全')

@@ -55,7 +55,7 @@ def index():
     return render_template('news/index.html', data=data)
 
 # *****首页新闻列表数据通过ajax刷新
-@news_blue.route('/new_list')
+@news_blue.route('/news_list')
 def get_news_list():
     cid = request.args.get('cid', '1')
     page = request.args.get('page', '1')

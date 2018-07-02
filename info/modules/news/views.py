@@ -1,4 +1,6 @@
 #导入蓝图对象
+from flask import request
+
 from . import news_blue
 from flask import session, render_template, current_app, jsonify
 from info.models import User, News, Category
@@ -51,6 +53,39 @@ def index():
     }
 
     return render_template('news/index.html', data=data)
+
+# *****首页新闻列表数据通过ajax刷新
+@news_blue.route('/new_list')
+def get_news_list():
+    cid = request.args.get('cid', '1')
+    page = request.args.get('page', '1')
+    per_page = request.args.get('per_page', '10')
+    try:
+        cid, page, per_page = int(cid), int(page), int(per_page)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg='参数格式不正确')
+    # 定义过滤条件
+    filters = []
+    if cid > 1:# 不是：最新
+        filters.append(News.category_id == cid)
+    try:# 如果cid
+        paginate = News.query.filter(*filters).order_by(News.create_time.desc()).paginate(page,per_page,False)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='查询数据库异常了')
+    news_list = paginate.items
+    total_page = paginate.pages
+    current_page = paginate.page
+    news_dict_list = []
+    for news in news_list:
+        news_dict_list.append(news.to_dict())
+    data = {
+        'news_dict_list': news_dict_list,
+        'total_page': total_page,
+        'current_page': current_page
+    }
+    return jsonify(errno=RET.OK, errmsg='OK', data=data)
 
 # favicon
 @news_blue.route('/favicon.ico')

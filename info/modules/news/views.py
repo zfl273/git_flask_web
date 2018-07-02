@@ -1,25 +1,29 @@
 #导入蓝图对象
+from flask import g
 from flask import request
 
+from info import db
 from . import news_blue
 from flask import session, render_template, current_app, jsonify
 from info.models import User, News, Category
 from info.utils.response_code import RET
+from info.utils.commons import login_required
 
 
-
-
+# *****项目首页
 @news_blue.route('/')
+@login_required
 def index():
-    user_id = session.get('user_id')# session为redis数据库
-    data = None
-    user = None
-    if user_id:
-        try:
-            user = User.query.get(user_id)
-        except Exception as e:
-            current_app.logger.error(e)
-            return jsonify(errno=RET.DBERR, errmsg='查询数据库失败')
+    user = g.user
+    # user_id = session.get('user_id')# session为redis数据库
+    # data = None
+    # user = None
+    # if user_id:
+    #     try:
+    #         user = User.query.get(user_id)
+    #     except Exception as e:
+    #         current_app.logger.error(e)
+    #         return jsonify(errno=RET.DBERR, errmsg='查询数据库失败')
     # ****新闻点击排行
     # 默认按照新闻的点击次数倒序排列
     try:
@@ -86,6 +90,37 @@ def get_news_list():
         'current_page': current_page
     }
     return jsonify(errno=RET.OK, errmsg='OK', data=data)
+
+
+@news_blue.route('/<int:news_id>')
+@login_required
+def get_news_detail(news_id):
+    user = g.user
+    try:
+        news = News.query.get(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='查询新闻数据库异常')
+
+    if not news:
+        return jsonify(errno=RET.NODATA, errmsg='新闻已经找不到')
+
+    news.clicks += 1
+    try:
+        db.session.add(news)
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg='数据库存取失败')
+    data = {
+        'user': user.to_dict() if user else None,
+        'news_detail': news.to_dict()
+    }
+
+    return render_template('news/detail.html', data=data)
+
+
 
 # favicon
 @news_blue.route('/favicon.ico')

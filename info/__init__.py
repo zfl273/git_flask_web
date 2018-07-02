@@ -39,6 +39,9 @@ def create_app(config_name):
         csrf_token = csrf.generate_csrf()
         response.set_cookie('csrf_token', csrf_token)
         return response
+    #给模版添加过滤器
+    from info.utils.commons import index_class
+    app.add_template_filter(index_class, 'index_class')
 
     from info.modules.news import news_blue
     app.register_blueprint(news_blue)

@@ -91,7 +91,7 @@ def get_news_list():
     }
     return jsonify(errno=RET.OK, errmsg='OK', data=data)
 
-
+# **** 详细新闻 模版注入
 @news_blue.route('/<int:news_id>')
 @login_required
 def get_news_detail(news_id):
@@ -120,6 +120,47 @@ def get_news_detail(news_id):
 
     return render_template('news/detail.html', data=data)
 
+# *****用户点击收藏
+@news_blue.route('/news_collect', methods=['POST'])
+@login_required
+def news_collect():
+    user = g.user
+    if not user:
+        return jsonify(errno=RET.SESSIONERR, errmsg='用户没有登录')
+
+    news_id = request.json.get('user_id')
+    action = request.json.get('action')
+    if not all([news_id, action]):
+        return jsonify(errno=RET.PARAMERR, errmsg='参数不全')
+    try:
+        news_id = int(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg='参数格式错误1')
+    if action not in ['collect', 'cancel_collect']:
+        return jsonify(errno=RET.PARAMERR, errmsg='参数格式错误2')
+    try:
+        news = News.query.get(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库查询失败')
+    if not news:
+        return jsonify(errno=RET.NODATA, errmsg='新闻数据不存在')
+
+    if action == 'collect':
+        if news not in user.collection_news:
+            user.collection_news.append(news)
+    else:
+        user.collection_news.remove(news)
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg='保存数据失败')
+
+    return jsonify(errno=RET.OK, errmsg='OK')
 
 
 # favicon

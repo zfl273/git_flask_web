@@ -1,7 +1,7 @@
 #导入蓝图对象
 from . import news_blue
 from flask import session, render_template, current_app, jsonify
-from info.models import User, News
+from info.models import User, News, Category
 from info.utils.response_code import RET
 
 
@@ -31,10 +31,23 @@ def index():
     news_dict_list = []
     for news in news_list:
         news_dict_list.append(news.to_dict())# 转成字典
+    #***** 新闻分类数据展示
+    try:
+        categories = Category.query.all()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库查找分类失败')
+    if not categories:
+        return jsonify(errno=RET.NODATA, errmsg='暂无分类数据')
+    categories_list = []
+    for category in categories:
+        categories_list.append(category.to_dict())
+
 
     data = {
         'user_info': user.to_dict() if user else None,
-        'news_dict_list': news_dict_list
+        'news_dict_list': news_dict_list,
+        'categories_list': categories_list
     }
 
     return render_template('news/index.html', data=data)

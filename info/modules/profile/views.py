@@ -6,6 +6,7 @@ from flask import request, session
 
 from info import constants
 from info import db
+from info.models import Category
 from info.utils.commons import login_required
 from info.utils.response_code import RET
 from . import profile_blue
@@ -24,7 +25,6 @@ def user_info():
     return render_template('news/user.html', data=data)
 
 # 基本资料 的页面iframe嵌套
-
 @profile_blue.route('/base_info',methods=['GET','POST'])
 @login_required
 def base_info():
@@ -99,7 +99,7 @@ def save_user_avatar():
     image_url = constants.QINIU_DOMIN_PREFIX + image_name
     return jsonify(errno=RET.OK, errmsg="ok", data={'avatar_url':image_url})
 
-
+# 修改密码
 @profile_blue.route('/pass_info',methods=['GET','POST'])
 @login_required
 def pass_info():
@@ -134,6 +134,30 @@ def pass_info():
 
 
 
+@profile_blue.route('/news_release',methods=['GET','POST'])
+@login_required
+def news_release():
+    user = g.user
+    if not user:
+        return jsonify(errno=RET.SESSIONERR, errmsg='用户mei登陆')
+
+    if request.method == 'GET':
+        try:
+            categories = Category.query.filter(Category.id>1).all()
+        except Exception as e:
+            current_app.logger.error(e)
+            return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+        if not categories:
+            return jsonify(errno=RET.NODATA, errmsg='无分类数据 ')
+
+        category_list = []
+        for category in categories:
+            category_list.append(category.to_dict())
+
+        data = {
+            'categories':category_list
+        }
+        return render_template('news/user_news_release.html', data=data)
 
 
 

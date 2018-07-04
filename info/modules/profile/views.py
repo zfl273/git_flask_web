@@ -37,6 +37,27 @@ def base_info():
         }
         return render_template('news/user_base_info.html', data=data)
     nick_name = request.json.get('nick_name')
+    signature = request.json.get('signature')
+    gender = request.json.get('gender')
+
+    if not all([nick_name, signature,gender]):
+        return jsonify(errno=RET.PARAMERR, errmsg='参数缺少')
+    if gender not in ['MAN','WOMEN']:
+        return jsonify(errno=RET.PARAMERR, errmsg='参数格式不对')
+    user.nick_name = nick_name
+    user.signature = signature
+    user.gender = gender
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg='保存数据失败')
+        # 修改redis缓存中昵称信息
+    session['nick_name'] = nick_name
+    # 返回结果
+    return jsonify(errno=RET.OK, errmsg='OK')
 
 
 # 头像设置
@@ -77,3 +98,54 @@ def save_user_avatar():
 
     image_url = constants.QINIU_DOMIN_PREFIX + image_name
     return jsonify(errno=RET.OK, errmsg="ok", data={'avatar_url':image_url})
+
+
+@profile_blue.route('/pass_info',methods=['GET','POST'])
+@login_required
+def pass_info():
+    user = g.user
+    if not user:
+        return jsonify(errno=RET.SESSIONERR,errmsg='用户未登录')
+    if request.method == 'GET':
+        return render_template('news/user_pass_info.html')
+    # 获取参数
+    old_password = request.json.get("old_password")
+    new_password = request.json.get("new_password")
+    # 检查参数的完整性
+    if not all([old_password,new_password]):
+        return jsonify(errno=RET.PARAMERR,errmsg='参数缺失')
+    # 检查旧密码是否正确
+    if not user.check_password(old_password):
+        return jsonify(errno=RET.PWDERR,errmsg='密码错误')
+    # 保存新密码,generate_password_hash
+    user.password = new_password
+    # 提交数据到数据库中
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg='保存数据失败')
+
+    # 返回结果
+    return jsonify(errno=RET.OK,errmsg='OK')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

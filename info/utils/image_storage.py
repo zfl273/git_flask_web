@@ -3,7 +3,7 @@ from qiniu import Auth, put_data
 access_key = '67_Dp111YTjSCfVS_9sPK-oFTD6bnaF1svQmUKew'
 secret_key = 'KJ-4T82JLy-e0BW0GCpiKh1WV5S3VFrOCRVOH43g'
 
-bucket_name = 'info'
+bucket_name = 'web-image'
 
 
 def storage(data):

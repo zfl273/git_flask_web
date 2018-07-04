@@ -8,6 +8,22 @@ $(function () {
     $(".pic_info").submit(function (e) {
         e.preventDefault()
 
-        //TODO 上传头像
+        //TODO 上传头像 have done
+        $(this).ajaxSubmit({
+            url:'/user/pic_info',
+            type:'post',
+            headers:{
+                'X-CSRFToken':getCookie('csrf_token')
+            },
+            success:function(resp){
+                if(resp.errno == '0'){
+                    $('.now_user_pic').attr('src',resp.data.avatar_url)
+                    $('.user_center_pic',parent.document).attr('src',resp.data.avatar_url)
+                    $('.user_login>img',parent.document).attr('src',resp.data.avatar_url)
+                }else{
+                    alert(resp.errmsg)
+                }
+            }
+        })
     })
 })

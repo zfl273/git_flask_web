@@ -60,7 +60,7 @@
                 <h3>点击排行</h3>
             </div>
             <ul class="rank_list">
-{#                点击排行#}
+{#                点 击排行#}
                 {% for news in data.news_dict_list %}
                     <li><span class="{{ loop.index | index_class }}">{{ loop.index0 }}</span><a href="/{{ news.id }}">{{ news.title }}</a></li>
 
